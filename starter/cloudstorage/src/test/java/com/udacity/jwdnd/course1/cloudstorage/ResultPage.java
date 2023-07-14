@@ -8,7 +8,9 @@ import org.openqa.selenium.support.PageFactory;
 public class ResultPage {
 
     @FindBy(id = "success")
-    private WebElement success;
+    public WebElement successHeading;
+    @FindBy(id = "error-heading")
+    public WebElement errorHeading;
 
     @FindBy(tagName = "a")
     private WebElement continueLink;

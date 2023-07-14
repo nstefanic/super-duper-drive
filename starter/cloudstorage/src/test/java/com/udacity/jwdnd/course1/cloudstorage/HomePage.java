@@ -54,6 +54,12 @@ public class HomePage {
     @FindBy(xpath = "//table[@id='fileTable']//tbody/tr[1]/td[1]/a[1]")
     public WebElement firstFileViewButton;
 
+    @FindBy(xpath = "//table[@id='fileTable']//tbody/tr[1]/td[1]/a[2]")
+    public WebElement firstFileDownloadButton;
+
+    @FindBy(xpath = "//table[@id='fileTable']//tbody/tr[1]/td[1]/a[3]")
+    public WebElement firstFileDeleteButton;
+
     @FindBy(xpath = "//table[@id='fileTable']//tbody/tr[1]/th[1]")
     public WebElement firstFileName;
 
@@ -139,6 +145,16 @@ public class HomePage {
     public void viewFirstFile() {
         System.out.println("clicking on firstFileViewButton");
         firstFileViewButton.click();
+    }
+
+    public void downloadFirstFile() {
+        System.out.println("clicking on firstFileDownloadButton");
+        firstFileDownloadButton.click();
+    }
+
+    public void deleteFirstFile() {
+        System.out.println("clicking on firstFileDeleteButton");
+        firstFileDeleteButton.click();
     }
 
 

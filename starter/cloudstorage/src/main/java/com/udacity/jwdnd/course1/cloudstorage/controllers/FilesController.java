@@ -37,7 +37,7 @@ public class FilesController {
     }
 
     @GetMapping("/files/{fileId}")
-    public ResponseEntity<ByteArrayResource> displayFile(@PathVariable Integer fileId, Authentication authentication) throws IOException {
+    public ResponseEntity<ByteArrayResource> displayFile(@RequestParam boolean download, @PathVariable Integer fileId, Authentication authentication) throws IOException {
         User user = userService.getUser(authentication.getName());
         System.out.println("fileId in displayFile(): " + fileId);
         // Load the file from the file system or database
@@ -45,12 +45,23 @@ public class FilesController {
         long fileSize = Long.parseLong(userFile.getFileSize());
         System.out.println("fileSize in displayFile(): " + fileSize);
         ByteArrayResource resource = new ByteArrayResource(userFile.getFileData());
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(userFile.getContentType()))
-                .contentLength(fileSize)
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + userFile.getFileName() + "\"")
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=\"" + userFile.getFileName() + "\"")
-                .body(resource);
+        if(download) {
+            System.out.println("download is true");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(userFile.getContentType()))
+                    .contentLength(fileSize)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + userFile.getFileName() + "\"")
+                    .body(resource);
+        } else {
+            System.out.println("download is false");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(userFile.getContentType()))
+                    .contentLength(fileSize)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=\"" + userFile.getFileName() + "\"")
+                    .body(resource);
+        }
+
+
     }
 
     @PostMapping("/file-upload")
@@ -75,8 +86,8 @@ public class FilesController {
                 return "result";
             }
 
-//            handle file size limit (100 MB)
-            if(fileSize > 100000000) {
+//            handle file size limit (10MB)
+            if(fileSize > 10000000) {
                 model.addAttribute("error", true);
                 model.addAttribute("message", "There was an error uploading the file. The file size limit is 100MB");
                 return "result";
@@ -96,6 +107,7 @@ public class FilesController {
                 model.addAttribute("message", "There was an error uploading the file. A file with that name already exists.");
                 return "result";
             }
+
 //            handle invalid file type
             if(!fileService.isValidFileType(contentType)) {
                 model.addAttribute("error", true);
@@ -152,6 +164,27 @@ public class FilesController {
         }
 
 
+    }
+
+    @GetMapping("/deleteFile")
+    public String deleteFile(@RequestParam("id") Integer fileId, Authentication authentication, Model model ) {
+        System.out.println("attempting to delete file with id: " + fileId);
+        try {
+            User user = userService.getUser(authentication.getName());
+            Integer userId = user.getUserId();
+
+            System.out.println("fileId in deleteFile(): " + fileId);
+            System.out.println("userId in deleteFile(): " + userId);
+
+            fileService.deleteFile(fileId, userId);
+            model.addAttribute("success", true);
+            return "result";
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", true);
+            model.addAttribute("message", "There was an error deleting the file. Please try again.");
+            return "result";
+        }
     }
 
 

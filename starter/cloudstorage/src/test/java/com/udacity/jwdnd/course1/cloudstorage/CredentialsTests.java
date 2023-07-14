@@ -159,7 +159,7 @@ public class CredentialsTests {
         homePage.deleteFirstCredential();
 
 //            check for success
-        new WebDriverWait(driver, Duration.ofSeconds(3))
+        new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.visibilityOfElementLocated(successDiv));
         List<WebElement> success = driver.findElements(successDiv);
         assertTrue(success.size() > 0);

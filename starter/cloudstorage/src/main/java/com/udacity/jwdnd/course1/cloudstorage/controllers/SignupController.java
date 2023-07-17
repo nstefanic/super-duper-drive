@@ -9,18 +9,19 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+@SuppressWarnings("SameReturnValue")
 @Controller
 @RequestMapping("/signup")
 public class SignupController {
 
-    UserService userService;
+    private final UserService userService;
     public SignupController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping
     public String getSignupPage() {
-        return "signup";
+       return "signup";
     }
 
     @PostMapping
@@ -45,6 +46,7 @@ public class SignupController {
         // if signup was successful, add signupSuccess attribute to model
         if (signupError == null) {
             model.addAttribute("signupSuccess", true);
+            return "redirect:/login?success";
         } else {
             model.addAttribute("signupError", signupError);
         }

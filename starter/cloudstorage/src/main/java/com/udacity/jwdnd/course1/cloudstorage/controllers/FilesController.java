@@ -18,13 +18,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Arrays;
 
+@SuppressWarnings("SameReturnValue")
 @Controller
 public class FilesController {
 
@@ -32,12 +31,15 @@ public class FilesController {
     private final UserService userService;
 
     public FilesController(FileService fileService, UserService userService) {
+        System.out.println("FilesController Bean created");
         this.fileService = fileService;
+        System.out.println("fileService: " + fileService.hashCode());
         this.userService = userService;
     }
 
     @GetMapping("/files/{fileId}")
-    public ResponseEntity<ByteArrayResource> displayFile(@RequestParam boolean download, @PathVariable Integer fileId, Authentication authentication) throws IOException {
+    public ResponseEntity<ByteArrayResource> displayFile(@RequestParam boolean download, @PathVariable Integer fileId, Authentication authentication, Model model) {
+
         User user = userService.getUser(authentication.getName());
         System.out.println("fileId in displayFile(): " + fileId);
         // Load the file from the file system or database
@@ -65,68 +67,77 @@ public class FilesController {
     }
 
     @PostMapping("/file-upload")
-    public String fileUpload(@RequestParam("fileUpload") MultipartFile fileUpload, Authentication authentication, Model model) throws IOException {
+    public String fileUpload(@RequestParam("fileUpload") MultipartFile fileUpload, Authentication authentication, RedirectAttributes redirectAttributes, Model model) {
+        System.out.println("fileUpload started... ");
+        redirectAttributes.addFlashAttribute("activeTab", "files");
+
         try {
             User user = userService.getUser(authentication.getName());
+            if(user == null) {
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file.  Please log in and try again.");
+                return "redirect:/result";
+            }
+
             Integer userId = user.getUserId();
 
             long fileSize = fileUpload.getSize();
 
 //            handle user not logged in
             if(userId == null) {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file.  Please log in and try again.");
-                return "result";
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file.  Please log in and try again.");
+                return "redirect:/result";
             }
 
 //           handle empty file
             if(!(fileSize > 0)) {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. The file was empty.");
-                return "result";
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. The file was empty.");
+                return "redirect:/result";
             }
 
 //            handle file size limit (10MB)
             if(fileSize > 10000000) {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. The file size limit is 100MB");
-                return "result";
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. The file size limit is 100MB");
+                return "redirect:/result";
             }
 
             String fileSizeString = String.valueOf(fileUpload.getSize());
             String fileName = StringUtils.cleanPath(fileUpload.getOriginalFilename());
             String contentType = fileUpload.getContentType();
 
-            System.out.println("file size: " + fileSizeString);;
+            System.out.println("file size: " + fileSizeString);
             System.out.println("file name: " + fileName);
             System.out.println("content type: " + contentType);
 
 //            handle duplicate file name
             if(!fileService.isFileNameAvailable(fileName, userId)) {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. A file with that name already exists.");
-                return "result";
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. A file with that name already exists.");
+                return "redirect:/result";
             }
 
 //            handle invalid file type
             if(!fileService.isValidFileType(contentType)) {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. The file type is not allowed.");
-                return "result";
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. The file type is not allowed.");
+                return "redirect:/result";
             }
 
 //            handle empty file name
-            if(fileName == "") {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. The file name cannot be empty.");
-                return "result";
+            if(fileName.isBlank() || fileName == null) {
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. The file name cannot be empty.");
+                return "redirect:/result";
             }
 
 //            handle empty content type
-            if(contentType == "") {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. The file type cannot be empty.");
-                return "result";
+            if(contentType.isBlank() || contentType == null) {
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. The file type cannot be empty.");
+                return "redirect:/result";
             }
 
 //            create file object
@@ -143,32 +154,35 @@ public class FilesController {
 
 //            handle error adding file to database
             if(!(added > 0)) {
-                model.addAttribute("error", true);
-                model.addAttribute("message", "There was an error uploading the file. Please try again.");
-                return "result";
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. Please try again.");
+                return "redirect:/result";
             }
 
-            model.addAttribute("success", true);
-            model.addAttribute("activeTab", "files");
+            redirectAttributes.addFlashAttribute("success", true);
+            redirectAttributes.addFlashAttribute("activeTab", "files");
             UserFile[] files = fileService.getAllFilesForUser(userId);
             Arrays.stream(files).toList().forEach(f -> System.out.println("user file: " + f.getFileName()));
-            model.addAttribute("allFiles", files);
-            return "result";
+            redirectAttributes.addFlashAttribute("allFiles", files);
+            return "redirect:/result";
 
 
         } catch (IOException e) {
             e.printStackTrace();
-            model.addAttribute("error", true);
-            model.addAttribute("message", "There was an error uploading the file. Please try again.");
-            return "result";
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "There was an error uploading the file. Please try again.");
+            return "redirect:/result";
         }
 
 
     }
 
     @GetMapping("/deleteFile")
-    public String deleteFile(@RequestParam("id") Integer fileId, Authentication authentication, Model model ) {
+    public String deleteFile(@RequestParam("id") Integer fileId, Authentication authentication, RedirectAttributes redirectAttributes, Model model ) {
         System.out.println("attempting to delete file with id: " + fileId);
+
+        redirectAttributes.addFlashAttribute("activeTab", "files");
+
         try {
             User user = userService.getUser(authentication.getName());
             Integer userId = user.getUserId();
@@ -177,13 +191,13 @@ public class FilesController {
             System.out.println("userId in deleteFile(): " + userId);
 
             fileService.deleteFile(fileId, userId);
-            model.addAttribute("success", true);
-            return "result";
+            redirectAttributes.addFlashAttribute("success", true);
+            return "redirect:/result";
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("error", true);
-            model.addAttribute("message", "There was an error deleting the file. Please try again.");
-            return "result";
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "There was an error deleting the file. Please try again.");
+            return "redirect:/result";
         }
     }
 

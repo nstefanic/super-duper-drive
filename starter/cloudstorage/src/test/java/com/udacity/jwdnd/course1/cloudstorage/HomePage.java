@@ -9,6 +9,9 @@ import java.util.List;
 
 public class HomePage {
 
+    @FindBy(id = "logout-btn")
+    private WebElement logoutButton;
+
 //    ************ NOTES Elements ************
     @FindBy(id = "nav-notes-tab")
     private WebElement notesTab;
@@ -45,7 +48,7 @@ public class HomePage {
     @FindBy(id = "nav-files-tab")
     private WebElement filesTab;
 
-    @FindBy(xpath = "//input[@id='fileUpload']")
+    @FindBy(id = "fileUpload")
     public WebElement fileUploadInput;
 
     @FindBy(id = "uploadButton")
@@ -100,6 +103,12 @@ public class HomePage {
 
 
 
+    public void logout() {
+        logoutButton.click();
+    }
+
+
+
 
 //    ************ NOTES Methods ************
     public void goToNotesTab() {
@@ -139,7 +148,9 @@ public class HomePage {
     }
 
     public void uploadFile(String filePath) {
+        System.out.println("typing filepath: " + filePath);
         fileUploadInput.sendKeys(filePath);
+        System.out.println("typed filepath: " + fileUploadInput.getText());
         uploadButton.click();
     }
     public void viewFirstFile() {

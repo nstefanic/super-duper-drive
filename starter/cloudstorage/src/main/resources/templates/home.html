@@ -20,17 +20,16 @@
 <!--                <span class="text-danger">Success. Your note was added.</span>-->
 <!--            </div>-->
             <div id="logoutDiv">
-                <form action="#" method="POST">
-<!--                    TODO: add logout functionality-->
-                    <button type="submit" class="btn btn-secondary float-right">Logout</button>
+                <form th:action="@{/logout}" action="#" method="POST">
+                    <button id="logout-btn" type="submit" class="btn btn-secondary float-right">Logout</button>
                 </form>
             </div>
             <div id="contentDiv" style="clear: right;">
                 <nav style="clear: right;">
                     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                        <a th:classappends="${activeTab == 'files' ? 'active' : ''}" class="nav-item nav-link" id="nav-files-tab" data-toggle="tab" href="#nav-files" role="tab" aria-controls="nav-files" aria-selected="true">Files</a>
-                        <a  th:classappends="${activeTab == 'notes' ? 'active' : ''}"class="nav-item nav-link" id="nav-notes-tab" data-toggle="tab" href="#nav-notes" role="tab" aria-controls="nav-notes" aria-selected="false">Notes</a>
-                        <a th:classappends="${activeTab == 'credentials' ? 'active' : ''}" class="nav-item nav-link" id="nav-credentials-tab" data-toggle="tab" href="#nav-credentials" role="tab" aria-controls="nav-credentials" aria-selected="false">Credentials</a>
+                        <a class="nav-item nav-link" id="nav-files-tab" data-toggle="tab" href="#nav-files" role="tab" aria-controls="nav-files" aria-selected="true">Files</a>
+                        <a class="nav-item nav-link" id="nav-notes-tab" data-toggle="tab" href="#nav-notes" role="tab" aria-controls="nav-notes" aria-selected="false">Notes</a>
+                        <a class="nav-item nav-link" id="nav-credentials-tab" data-toggle="tab" href="#nav-credentials" role="tab" aria-controls="nav-credentials" aria-selected="false">Credentials</a>
                     </div>
                 </nav>
                 <div class="tab-content" id="nav-tabContent">
@@ -61,8 +60,8 @@
                                 <tbody>
                                 <tr th:each="userFile : ${allFiles}">
                                     <td>
-                                        <a th:href="@{/files/{fileId}?download=true(fileId=${userFile.fileId})}" target="_blank" class="btn btn-success">View</a>
-                                        <a th:href="@{/files/{fileId}?download=false(fileId=${userFile.fileId})}" target="_blank" class="btn btn-success">Download</a>
+                                        <a th:href="@{/files/{fileId}?download=false(fileId=${userFile.fileId})}" target="_blank" class="btn btn-success">View</a>
+                                        <a th:href="@{/files/{fileId}?download=true(fileId=${userFile.fileId})}" target="_blank" class="btn btn-success">Download</a>
                                         <a th:href="@{/deleteFile?id={fileId}(fileId=${userFile.fileId})}"  class="btn btn-danger">Delete</a>
                                     </td>
                                     <th th:text="${userFile.fileName}" scope="row">ExampleFile.txt</th>
@@ -231,6 +230,24 @@
                 $('#credential-username').val(username ? username : '');
                 $('#credential-password').val(password ? password : '');
                 $('#credentialModal').modal('show');
+            }
+
+
+            const activeTabParam = '[[${param.activeTab} ? ${param.activeTab} : 'files']]';
+            const activeTabModel = "${activeTab}";
+            switch(true) {
+                case activeTabParam === 'files' || activeTabModel === 'files':
+                    $('#nav-files-tab').tab('show');
+                    break;
+                case activeTabParam === 'notes' || activeTabModel === 'notes':
+                    $('#nav-notes-tab').tab('show');
+                    break;
+                case activeTabParam === 'credentials' || activeTabModel === 'credentials':
+                    $('#nav-credentials-tab').tab('show');
+                    break;
+                default:
+                    $('#nav-files-tab').tab('show');
+                    break;
             }
         </script>
     </body>

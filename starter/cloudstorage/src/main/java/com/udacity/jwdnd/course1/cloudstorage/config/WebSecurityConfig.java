@@ -53,18 +53,12 @@ public class WebSecurityConfig  {
                         // specifies the url to send users to if login is successful
                         .defaultSuccessUrl("/home", true)
                 )
-                .logout((logout) -> logout.permitAll())
+                .logout((logout) -> logout
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll())
                 .authenticationProvider(authenticationService);
 
         return http.build();
     }
-
-//    @Autowired
-//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-//        auth
-//                .authenticationProvider(this.authenticationService);
-////                .userDetailsService(userDetailsService)
-////                .passwordEncoder(passwordEncoder());
-//    }
 
 }

@@ -28,20 +28,21 @@ public class CredentialsTests {
     @LocalServerPort
     private Integer port;
 
-    private static String baseURL = "http://localhost:";
+    private final String baseURL = "http://localhost:";
 
     private static WebDriver driver;
     private HomePage homePage;
     private ResultPage resultPage;
-    private By successDiv = By.id("success");
+    private final By successDiv = By.id("success");
+    private final By generalErrorHeading = By.id("error");
 
-    String url = "www.google.com";
-    String username = "user";
-    String password = "TerribleP@ssword0";
+    private final String url = "www.google.com";
+    private final String username = "user";
+    private final String password = "TerribleP@ssword0";
 
-    String newUrl = "www.yahoo.com";
-    String newUsername = "newUser";
-    String newPassword = "NewP@ssword1";
+    private final String newUrl = "www.yahoo.com";
+    private final String newUsername = "newUser";
+    private final String newPassword = "NewP@ssword1";
 
     @BeforeAll
     public static void beforeAll() {
@@ -55,33 +56,21 @@ public class CredentialsTests {
         driver.quit();
     }
 
-    @BeforeEach
-    public void beforeEach() {
-    }
-
+//    ********** Happy Path Tests **********
     @Order(1)
     @Test
     @DisplayName("Test adding a credential")
     public void testAddCredential() {
         signUpAndLogin();
 
-        driver.get(baseURL + port + "/home");
-        homePage = new HomePage(driver);
+//        GIVEN
+//        credentials properties are set above as class variables
 
-//            click on credentials tab
-        homePage.goToCredentialsTab();
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(ExpectedConditions.elementToBeClickable(homePage.addCredentialButton));
+//        WHEN
+        goToHomePageAndAddCredential(url, username, password);
 
-//            click on add credential button
-        homePage.clickAddCredentialButton();
-
-//            add credential
-        new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(ExpectedConditions.elementToBeClickable(homePage.credentialUrlInput));
-        homePage.addCredential(url, username, password);
-
-//            check for success
+//        THEN
+//            #1: check for success
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.visibilityOfElementLocated(successDiv));
         List<WebElement> success = driver.findElements(successDiv);
@@ -95,18 +84,27 @@ public class CredentialsTests {
 //            click on credentials tab
         homePage.goToCredentialsTab();
 
-//            check for credential
+//            #2: check for credential
         assertEquals(1, homePage.credentialsList.size());
     }
 
-    @Order(2)
-    @Test
-    @DisplayName("Test editing previous credential")
-    public void testEditCredential() {
 
-//            click on notes tab
+    @Test
+    @Order(2)
+    @DisplayName("Test editing previous credential")
+//    NOTE: this test relies on the previous test to pass
+    public void testEditCredential() {
+//        signUpAndLogin();
+
+
+//        GIVEN
+//        credentials properties are same as first test (see class variables)
+
+
+//        WHEN
+//            notes tab should already be open (from activeTab)
         homePage = new HomePage(driver);
-        homePage.goToCredentialsTab();
+//        homePage.goToCredentialsTab();
 
 //            check for credential
         assertEquals(1, homePage.credentialsList.size());
@@ -123,7 +121,8 @@ public class CredentialsTests {
         homePage.editFirstCredential(newUrl, newUsername, newPassword);
 
 
-//            check for success
+//        THEN
+//            #1: check for success
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.visibilityOfElementLocated(successDiv));
         List<WebElement> success = driver.findElements(successDiv);
@@ -134,31 +133,39 @@ public class CredentialsTests {
         resultPage = new ResultPage(driver);
         resultPage.returnToHomePage();
 
-        homePage.goToCredentialsTab();
+//        homePage.goToCredentialsTab();
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.elementToBeClickable(homePage.addCredentialButton));
 
-//        check url and username are edited
+//            #2: check url and username are edited
         assertEquals(newUrl, homePage.firstCredentialUrl.getText());
         assertEquals(newUsername, homePage.firstCredentialUsername.getText());
-//           check password is encrypted
+//            #3: check password is encrypted
         assertNotEquals(newPassword, homePage.firstCredentialPassword.getText());
 
     }
 
-    @Order(3)
+
     @Test
+    @Order(3)
     @DisplayName("Test deleting previous credential")
+//    NOTE: this test relies on the previous test to pass
     public void testDeleteCredential() {
 
+//        GIVEN
+//        credentials properties are same as first test (see class variables)
+
+
+//        WHEN
 //            delete credential
         homePage = new HomePage(driver);
-        homePage.goToCredentialsTab();
+//        homePage.goToCredentialsTab();
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.elementToBeClickable(homePage.firstCredentialDeleteButton));
         homePage.deleteFirstCredential();
 
-//            check for success
+//        THEN
+//            #1: check for success
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.visibilityOfElementLocated(successDiv));
         List<WebElement> success = driver.findElements(successDiv);
@@ -168,16 +175,129 @@ public class CredentialsTests {
 //            return to home page and check for deleted credential
         resultPage = new ResultPage(driver);
         resultPage.returnToHomePage();
-
-//            check credential is no longer displayed
         homePage.goToCredentialsTab();
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.elementToBeClickable(homePage.addCredentialButton));
 
+//            #2: check credential is no longer displayed
         assertEquals(0, homePage.credentialsList.size());
     }
 
 
+//    ************ ERROR TESTS ************
+
+    @Test
+    @Order(4)
+    @DisplayName("Test adding a credential with blank username")
+//    NOTE: assumes there are currently no stored credentials
+//    because test #3 deletes the credential
+    public void testAddCredentialWithBlankUsername() {
+//        signUpAndLogin();
+
+//        GIVEN
+//        credentials properties are set above as class variables
+//        NOTE: an empty username will not allow the submit button to be clicked
+//        because of required attribute, which is why blank is tested instead.
+        String blankUsername = " ";
+
+//        WHEN
+        goToHomePageAndAddCredential(url, blankUsername, password);
+
+//        THEN
+//            #1: check for error
+        new WebDriverWait(driver, Duration.ofSeconds(1))
+                .until(ExpectedConditions.visibilityOfElementLocated(generalErrorHeading));
+        List<WebElement> error = driver.findElements(generalErrorHeading);
+        assertTrue(error.size() > 0);
+
+//            return to home page
+        resultPage = new ResultPage(driver);
+        resultPage.returnToHomePage();
+
+//            click on credentials tab
+//        homePage.goToCredentialsTab();
+
+//            #2: check for credential
+        assertEquals(0, homePage.credentialsList.size());
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("Test adding a credential with blank password")
+//    NOTE: assumes there are currently no stored credentials
+//    because test #3 deletes the credential
+    public void testAddCredentialWithBlankPassword() {
+//        signUpAndLogin();
+
+//        GIVEN
+//        credentials properties are set above as class variables
+//        NOTE: an empty password will not allow the submit button to be clicked
+//        because of required attribute, which is why blank is tested instead.
+        String blankPassword = " ";
+
+//        WHEN
+        goToHomePageAndAddCredential(url, username, blankPassword);
+
+//        THEN
+//            #1: check for error
+        new WebDriverWait(driver, Duration.ofSeconds(1))
+                .until(ExpectedConditions.visibilityOfElementLocated(generalErrorHeading));
+        List<WebElement> error = driver.findElements(generalErrorHeading);
+        assertTrue(error.size() > 0);
+
+//            return to home page
+        resultPage = new ResultPage(driver);
+        resultPage.returnToHomePage();
+
+//            click on credentials tab
+        homePage.goToCredentialsTab();
+
+//            #2: check for credential
+        assertEquals(0, homePage.credentialsList.size());
+    }
+
+
+    @Test
+    @Order(6)
+    @DisplayName("Test adding a credential with blank url")
+//    NOTE: assumes there are currently no stored credentials
+//    because test #3 deletes the credential
+    public void testAddCredentialWithBlankUrl() {
+//        signUpAndLogin();
+
+//        GIVEN
+//        credentials properties are set above as class variables
+//        NOTE: an empty url will not allow the submit button to be clicked
+//        because of required attribute, which is why blank is tested instead.
+        String blankUrl = " ";
+
+//        WHEN
+        goToHomePageAndAddCredential(blankUrl, username, password);
+
+//        THEN
+//            #1: check for error
+        new WebDriverWait(driver, Duration.ofSeconds(1))
+                .until(ExpectedConditions.visibilityOfElementLocated(generalErrorHeading));
+        List<WebElement> error = driver.findElements(generalErrorHeading);
+        assertTrue(error.size() > 0);
+
+//            return to home page
+        resultPage = new ResultPage(driver);
+        resultPage.returnToHomePage();
+
+//            click on credentials tab
+        homePage.goToCredentialsTab();
+
+//            #2: check for credential
+        assertEquals(0, homePage.credentialsList.size());
+    }
+
+
+
+
+
+
+//    ************ Helper Methods ************
     private void signUpAndLogin() {
         String firstname = "George";
         String lastname = "Doe";
@@ -192,6 +312,27 @@ public class CredentialsTests {
         driver.get(baseURL + port + "/login");
         LoginPage loginPage = new LoginPage(driver);
         loginPage.login(username, password);
+
+    }
+
+    private void goToHomePageAndAddCredential(String url, String username, String password) {
+
+//        go to home page
+        driver.get(baseURL + port + "/home");
+        homePage = new HomePage(driver);
+
+//            click on credentials tab
+        homePage.goToCredentialsTab();
+        new WebDriverWait(driver, Duration.ofSeconds(1))
+                .until(ExpectedConditions.elementToBeClickable(homePage.addCredentialButton));
+
+//            click on add credential button
+        homePage.clickAddCredentialButton();
+
+//            add credential
+        new WebDriverWait(driver, Duration.ofSeconds(1))
+                .until(ExpectedConditions.elementToBeClickable(homePage.credentialUrlInput));
+        homePage.addCredential(url, username, password);
 
     }
 

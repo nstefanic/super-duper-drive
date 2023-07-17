@@ -9,8 +9,11 @@ public class ResultPage {
 
     @FindBy(id = "success")
     public WebElement successHeading;
-    @FindBy(id = "error-heading")
-    public WebElement errorHeading;
+    @FindBy(id = "update-error-heading")
+    public WebElement updateErrorHeading;
+
+    @FindBy(id = "error")
+    public WebElement generalErrorHeading;
 
     @FindBy(tagName = "a")
     private WebElement continueLink;

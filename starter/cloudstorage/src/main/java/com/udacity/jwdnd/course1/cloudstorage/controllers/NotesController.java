@@ -8,7 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@SuppressWarnings("SameReturnValue")
 @Controller
 public class NotesController {
 
@@ -22,6 +24,8 @@ public class NotesController {
 
     @GetMapping("/notes")
     public String getNotes(Authentication authentication, Model model) {
+        model.addAttribute("activeTab", "notes");
+
         User user = userService.getUser(authentication.getName());
         Note[] notes = noteService.getAllNotes(user.getUserId());
         model.addAttribute("allNotes", notes);
@@ -30,6 +34,8 @@ public class NotesController {
 
     @GetMapping("/notes/{noteId}")
     public String getNotes(@PathVariable Integer noteId, Authentication authentication, Model model) {
+        model.addAttribute("activeTab", "notes");
+
         User user = userService.getUser(authentication.getName());
         Note[] notes = noteService.getAllNotes(user.getUserId());
         model.addAttribute("allNotes", notes);
@@ -37,36 +43,53 @@ public class NotesController {
     }
 
     @PostMapping("/notes")
-    public String postNotes(@ModelAttribute Note note, Authentication authentication, Model model) {
+    public String postNotes(@ModelAttribute Note note, Authentication authentication, RedirectAttributes redirectAttributes, Model model) {
+        redirectAttributes.addFlashAttribute("activeTab", "notes");
+
         User user = userService.getUser(authentication.getName());
         note.setUserId(user.getUserId());
-        int added = noteService.addOrEditNote(note);
-        if (added < 0) {
-            model.addAttribute("error", true);
-            model.addAttribute("message", "There was an error adding the note. Please try again.");
-            return "result";
+
+        String noteTitle = note.getNoteTitle();
+        String noteDescription = note.getNoteDescription();
+
+//        check if noteTitle and noteDescription are empty
+        if(noteTitle.isBlank()  || noteTitle == null || noteDescription.isBlank() || noteDescription == null) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "Note title and description cannot be empty.");
+            return "redirect:/result";
         }
 
-//        model.addAttribute("allNotes", noteService.getAllNotes(user.getUserId()));
-        model.addAttribute("success", true);
-//        model.addAttribute("activeTab", "notes");
 
-        return "result";
+        int added = noteService.addOrEditNote(note);
+        if (added < 0) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "There was an error adding the note. Please try again.");
+            return "redirect:/result";
+        }
+
+//        redirectAttributes.addFlashAttribute("allNotes", noteService.getAllNotes(user.getUserId()));
+        redirectAttributes.addFlashAttribute("success", true);
+//        redirectAttributes.addFlashAttribute("activeTab", "notes");
+
+        return "redirect:/result";
     }
 
     @GetMapping("/deleteNote")
-    public String deleteNote(@RequestParam("id") Integer noteId, Authentication authentication, Model model) {
+    public String deleteNote(@RequestParam("id") Integer noteId, Authentication authentication, RedirectAttributes redirectAttributes, Model model) {
         System.out.println("attempting to delete noteId: " + noteId);
+
+        redirectAttributes.addFlashAttribute("activeTab", "notes");
+
         try{
             User user = userService.getUser(authentication.getName());
             noteService.deleteNote(noteId, user.getUserId());
-            model.addAttribute("success", true);
+            redirectAttributes.addFlashAttribute("success", true);
         } catch (Exception e) {
-            model.addAttribute("error", true);
-            model.addAttribute("message", "There was an error deleting the note. Please try again.");
-            return "result";
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "There was an error deleting the note. Please try again.");
+            return "redirect:/result";
         }
 
-        return "result";
+        return "redirect:/result";
     }
 }

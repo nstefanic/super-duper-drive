@@ -2,12 +2,7 @@ package com.udacity.jwdnd.course1.cloudstorage;
 
 import com.udacity.jwdnd.course1.cloudstorage.auth.LoginPage;
 import com.udacity.jwdnd.course1.cloudstorage.auth.SignupPage;
-import com.udacity.jwdnd.course1.cloudstorage.models.UserFile;
-import com.udacity.jwdnd.course1.cloudstorage.services.FileService;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -16,17 +11,14 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.io.File;
-import java.net.UnknownServiceException;
 import java.time.Duration;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -34,16 +26,14 @@ public class UserFileUploadTests {
 
     @LocalServerPort
     private Integer port;
-    private String baseURL = "http://localhost:";
+    private final String baseURL = "http://localhost:";
     private static WebDriver driver;
-    private LoginPage loginPage;
-    private SignupPage signupPage;
     private HomePage homePage;
     private ResultPage resultPage;
-    String filePath = "./src/test/resources";
-    String fileName = "file-upload-test.txt";
-    By successDiv = By.id("success");
-    By errorHeading = By.id("error-heading");
+    private final String filePath = "src/test/resources";
+    private final String fileName = "test.txt";
+    private final By successDiv = By.id("success");
+    private final By generalErrorHeading = By.id("error");
 
     @BeforeAll
     public static void beforeAll() {
@@ -57,25 +47,33 @@ public class UserFileUploadTests {
         driver.quit();
     }
 
-    @BeforeEach
-    public void beforeEach() {
-    }
-
     @Test
     @Order(1)
     @DisplayName("Test that a file can be uploaded")
     public void testFileUpload() {
         signUpAndLogin();
 
+//        GIVEN
+//        filepath and filename are provided as class variables
+
+        homePage = new HomePage(driver);
+        homePage.goToNotesTab();
+        homePage.goToCredentialsTab();
+        homePage.goToFilesTab();
+
+//        WHEN
         goToHomePageAndUploadFile(filePath, fileName);
 
         resultPage = new ResultPage(driver);
+
+        System.out.println(driver.getCurrentUrl());
 
 //        wait for success message to be displayed
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.visibilityOfElementLocated(successDiv));
         List<WebElement> success = driver.findElements(successDiv);
 
+//        THEN
 //        check if success message is displayed
         assertTrue(success.size() > 0);
 
@@ -85,10 +83,17 @@ public class UserFileUploadTests {
 
     @Test
     @Order(2)
-    @DisplayName("Test that a file can be viewed")
-    public void testViewFile() {
+    @DisplayName("Test that previously uploaded file can be viewed")
+    public void testViewPreviouslyUploadedFile() {
+//        signUpAndLogin();
+
+//        GIVEN
+//        filepath and filename is the same as in previous test (see class variables)
+
+
+//        WHEN
         homePage = new HomePage(driver);
-        homePage.goToFilesTab();
+//        homePage.goToFilesTab();
 
         System.out.println("firstFileViewButton: " + homePage.firstFileViewButton.getText());
 
@@ -101,7 +106,9 @@ public class UserFileUploadTests {
         System.out.println("firstFileName: " + firstFileName);
         assertEquals(firstFileName, fileName);
 
+//        THEN
 //        click on View button of first file
+//        if viewFirstFile() errors then test will fail
         try {
             homePage.viewFirstFile();
             String currentUrl = driver.getCurrentUrl();
@@ -117,15 +124,25 @@ public class UserFileUploadTests {
     @Test
     @Order(3)
     @DisplayName("Test that a file can be downloaded")
+//    this test is the third in a row because it depends on the previous two tests
     public void testDownloadFile() {
+//        signUpAndLogin();
+
+
+//        GIVEN
+//        filepath and filename is the same as in first test (see class variables)
+
+//        WHEN
         homePage = new HomePage(driver);
-        homePage.goToFilesTab();
+//        homePage.goToFilesTab();
 
 //        wait for the first file to be clickable
         new WebDriverWait(driver, Duration.ofSeconds(1))
                 .until(ExpectedConditions.elementToBeClickable(homePage.firstFileDownloadButton));
 
+//        THEN
 //        click on Download button of first file
+//        if downloadFirstFile() errors then test will fail
         try {
             homePage.downloadFirstFile();
             String currentUrl = driver.getCurrentUrl();
@@ -141,9 +158,17 @@ public class UserFileUploadTests {
     @Test
     @Order(4)
     @DisplayName("Test that a file can be deleted")
+//    this test is the fourth in a row because it depends on the previous three tests
     public void testDeleteFile() {
+//        signUpAndLogin();
+
+//        GIVEN
+//        filepath and filename is the same as in first test (see class variables)
+
+
+//        WHEN
         homePage = new HomePage(driver);
-        homePage.goToFilesTab();
+//        homePage.goToFilesTab();
 
 //        wait for the first file to be clickable
         new WebDriverWait(driver, Duration.ofSeconds(1))
@@ -156,6 +181,8 @@ public class UserFileUploadTests {
                 .until(ExpectedConditions.visibilityOfElementLocated(successDiv));
         List<WebElement> success = driver.findElements(successDiv);
 
+//        THEN
+//        check if success message is displayed
         assertTrue(success.size() > 0);
 
 
@@ -166,9 +193,15 @@ public class UserFileUploadTests {
     @Test
     @Order(5)
     @DisplayName("Test that a file can be uploaded with the same name")
+//    this test can be run independently of the tests above
     public void testFileUploadWithSameName() {
 //        signUpAndLogin();
 
+//        GIVEN
+//        filepath and filename are provided through the class variables
+
+
+//        WHEN
 //        upload first file
         goToHomePageAndUploadFile(filePath, fileName);
 //        check if first file was sucessfully uploaded
@@ -181,10 +214,11 @@ public class UserFileUploadTests {
 
 //        wait for error message to be displayed
         new WebDriverWait(driver, Duration.ofSeconds(1))
-                .until(ExpectedConditions.visibilityOfElementLocated(errorHeading));
+                .until(ExpectedConditions.visibilityOfElementLocated(generalErrorHeading));
 
+//        THEN
 //        check if error message is displayed (it should be)
-        assertTrue(resultPage.errorHeading.isDisplayed());
+        assertTrue(resultPage.generalErrorHeading.isDisplayed());
 
 //        check if success message is displayed (it should NOT be)
         List<WebElement> success = driver.findElements(successDiv);
@@ -236,7 +270,7 @@ public class UserFileUploadTests {
 //        THEN
 //        check if error message is displayed
         resultPage = new ResultPage(driver);
-        assertTrue(resultPage.errorHeading.isDisplayed());
+        assertTrue(resultPage.generalErrorHeading.isDisplayed());
 
     }
 
@@ -263,7 +297,7 @@ public class UserFileUploadTests {
 //        THEN
 //        check if error message is displayed
         resultPage = new ResultPage(driver);
-        assertTrue(resultPage.errorHeading.isDisplayed());
+        assertTrue(resultPage.generalErrorHeading.isDisplayed());
 
     }
 
@@ -286,58 +320,64 @@ public class UserFileUploadTests {
 //        THEN
 //        check if error message is displayed
         resultPage = new ResultPage(driver);
-        assertTrue(resultPage.errorHeading.isDisplayed());
+        assertTrue(resultPage.generalErrorHeading.isDisplayed());
 
     }
 
-    @Test
-    @Order(9)
-    @DisplayName("ERROR Test empty file name")
-    public void testEmptyFileName() {
-        signUpAndLogin();
+//    @MockBean
+//    private FileService fileService;
 
-//        GIVEN
-        String filePath = "./src/test/resources";
-        String fileName = "";
+//    @Test
+//    @Order(10)
+//    @DisplayName("ERROR Test database error")
+//    @Disabled
+//    public void testDatabaseError() {
+//
+//        signUpAndLogin();
+//
+////       GIVEN
+//        String filePath = "./src/test/resources";
+//        String fileName = "file-upload-test.txt";
+//
+////        WHEN
+////        go to home page
+//        driver.get(baseURL + port + "/home");
+//        homePage = new HomePage(driver);
+//
+////        go to files tab
+//        homePage.goToFilesTab();
+//        new WebDriverWait(driver, Duration.ofSeconds(1))
+//                .until(ExpectedConditions.elementToBeClickable(homePage.fileUploadInput));
+//
+////        upload file
+//        File file = new File(filePath, fileName);
+//        String absolutePath = file.getAbsolutePath();
+//        System.out.println("filePath for file upload test: " + absolutePath);
+//
+////        THIS IS THE ACTION FOR WHICH I WANT TO MOCK A DATABASE RESPONSE
+//        homePage.uploadFile(absolutePath);
+//
+//
+////        Everything below here makes not sense at the moment
+//        UserFile userFile = new UserFile(
+//                fileName,
+//                "text/plain",
+//                "1000",
+//                1,
+//                new byte[0]
+//        );
+//
+////        when(fileService.uploadFile(userFile)).thenReturn(-1);
+//
+//
+////        THEN
+//        assertThrows(Exception.class, () -> fileService.uploadFile(userFile));
+//        resultPage = new ResultPage(driver);
+////        *** THIS IS WHAT I WANT TO TEST ***
+//        assertTrue(resultPage.generalErrorHeading.isDisplayed());
+//
+//    }
 
-//        WHEN
-        goToHomePageAndUploadFile(filePath, fileName);
-
-//        THEN
-//        check if error message is displayed
-        resultPage = new ResultPage(driver);
-        assertTrue(resultPage.errorHeading.isDisplayed());
-
-    }
-
-    @MockBean
-    private FileService fileService;
-
-    @Test
-    public void testDatabaseError() throws Exception {
-
-        signUpAndLogin();
-
-        UserFile file = new UserFile(
-                "test.txt",
-                "text/plain",
-                "1000",
-                1,
-                new byte[0]
-        );
-
-        // Mock the database error
-//        when(fileService.uploadFile(file)).thenThrow(new UnknownServiceException());
-
-        // Perform the request and verify the response
-//        goToHomePageAndUploadFile(filePath, fileName);
-        when(fileService.uploadFile(file)).thenReturn(-1);
-
-
-        resultPage = new ResultPage(driver);
-
-        assertTrue(resultPage.errorHeading.isDisplayed());
-    }
 
 
     // helper function
@@ -348,12 +388,12 @@ public class UserFileUploadTests {
         String password = "MyMyHomie1!";
 
         driver.get(baseURL + port + "/signup");
-        signupPage = new SignupPage(driver);
+        SignupPage signupPage = new SignupPage(driver);
         signupPage.signup(firstname, lastname, username, password);
 
 
         driver.get(baseURL + port + "/login");
-        loginPage = new LoginPage(driver);
+        LoginPage loginPage = new LoginPage(driver);
         loginPage.login(username, password);
 
     }

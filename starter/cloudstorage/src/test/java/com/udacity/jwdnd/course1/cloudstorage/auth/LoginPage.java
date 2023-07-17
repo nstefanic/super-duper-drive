@@ -16,6 +16,9 @@ public class LoginPage {
     @FindBy(id="login-button")
     WebElement submitButton;
 
+    @FindBy(id="logged-out")
+    public WebElement loggedOutMessage;
+
     public LoginPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
     }

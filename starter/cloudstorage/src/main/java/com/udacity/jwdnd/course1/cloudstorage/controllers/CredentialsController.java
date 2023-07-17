@@ -11,56 +11,86 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@SuppressWarnings("SameReturnValue")
 @Controller
 public class CredentialsController {
 
-    private final EncryptionService encryptionService;
     private final CredentialsService credentialsService;
     private final UserService userService;
 
-    public CredentialsController(EncryptionService encryptionService, CredentialsService credentialsService, UserService userService) {
-        this.encryptionService = encryptionService;
+    public CredentialsController(CredentialsService credentialsService, UserService userService) {
 
         this.credentialsService = credentialsService;
         this.userService = userService;
     }
 
     @PostMapping("/credentials")
-    public String addCredentials(Authentication authentication, SavedCredential credential, Model model) {
+    public String addCredentials(Authentication authentication, SavedCredential credential, RedirectAttributes redirectAttributes, Model model) {
+
+        redirectAttributes.addFlashAttribute("activeTab", "credentials");
 
         User user = userService.getUser(authentication.getName());
         Integer userId = user.getUserId();
         credential.setUserId(userId);
 
-        int result = credentialsService.addOrUpdateCredential(credential);
-        if (result < 0) {
-            model.addAttribute("error", true);
-            model.addAttribute("message", "There was an error adding/updating the credential.");
-        } else {
-            model.addAttribute("success", "true");
+//        check if username property is empty
+        String username = credential.getUsername();
+        if (username.isBlank() || username == null) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "Username cannot be empty.");
+            return "redirect:/result";
         }
 
-        return "result";
+//        check if password property is empty
+        String password = credential.getPassword();
+        if (password.isBlank() || password == null) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "Password cannot be empty.");
+            return "redirect:/result";
+        }
+
+//        check if url property is empty
+        String url = credential.getUrl();
+        if (url.isBlank() || url == null) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "URL cannot be empty.");
+            return "redirect:/result";
+        }
+
+        int result = credentialsService.addOrUpdateCredential(credential);
+        if (result <= 0) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "There was an error adding/updating the credential.");
+        } else {
+            redirectAttributes.addFlashAttribute("success", "true");
+        }
+
+        return "redirect:/result";
     }
 
     @GetMapping("/deleteCredential")
-    public String deleteCredential(@RequestParam("id") Integer credentialId,  Authentication authentication, Model model) {
+    public String deleteCredential(@RequestParam("id") Integer credentialId,  Authentication authentication, RedirectAttributes redirectAttributes, Model model) {
         System.out.println("attempting to delete credential with id: " + credentialId);
+
+        redirectAttributes.addFlashAttribute("activeTab", "credentials");
+
+
         try {
             User user = userService.getUser(authentication.getName());
             Integer userId = user.getUserId();
 
             credentialsService.deleteCredential(credentialId, userId);
-            model.addAttribute("success", true);
+            redirectAttributes.addFlashAttribute("success", true);
             System.out.println("deleteCredential success");
-            return "result";
+            return "redirect:/result";
         } catch (Exception e) {
             System.out.println("deleteCredential error");
             e.printStackTrace();
-            model.addAttribute("error", true);
-            model.addAttribute("message", "There was an error deleting the credential.");
-            return "result";
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "There was an error deleting the credential.");
+            return "redirect:/result";
         }
 
 //        Success

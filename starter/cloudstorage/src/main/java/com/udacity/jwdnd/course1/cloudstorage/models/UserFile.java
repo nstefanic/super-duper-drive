@@ -11,6 +11,10 @@ public class UserFile {
 
     private byte[] fileData;
 
+    public UserFile() {
+        
+    }
+
     public UserFile(String fileName, String contentType, String fileSize, Integer userId, byte[] fileData) {
         this.fileName = fileName;
         this.contentType = contentType;

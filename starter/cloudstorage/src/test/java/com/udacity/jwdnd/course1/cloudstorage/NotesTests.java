@@ -16,8 +16,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import java.time.Duration;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -28,17 +27,18 @@ public class NotesTests {
         @LocalServerPort
         private Integer port;
 
-        private static String baseURL = "http://localhost:";
+        private final String baseURL = "http://localhost:";
 
         private static WebDriver driver;
         private HomePage homePage;
         private ResultPage resultPage;
-        private By successDiv = By.id("success");
+        private final By successDiv = By.id("success");
+        private final By generalErrorHeading = By.id("error");
 
-        String noteTitle = "My New Note";
-        String noteDescription = "This is my note and it is wonderful.";
-        String newNoteTitle = "My EDITED Title";
-        String newNoteDescription = "My EDITED description is even better.";
+        private final String noteTitle = "My New Note";
+        private final String noteDescription = "This is my note and it is wonderful.";
+        private final String newNoteTitle = "My EDITED Title";
+        private final String newNoteDescription = "My EDITED description is even better.";
 
 
         @BeforeAll
@@ -53,31 +53,13 @@ public class NotesTests {
             driver.quit();
         }
 
-        @BeforeEach
-        public void beforeEach() {
-        }
-
         @Order(1)
         @Test
         @DisplayName("Test adding a note")
         public void testAddNote() {
             signUpAndLogin();
 
-            driver.get(baseURL + port + "/home");
-            homePage = new HomePage(driver);
-
-//            click on notes tab
-            homePage.goToNotesTab();
-            new WebDriverWait(driver, Duration.ofSeconds(1))
-                    .until(ExpectedConditions.elementToBeClickable(homePage.addNoteButton));
-
-//            click on add note button
-            homePage.clickAddNoteButton();
-
-//            add note
-            new WebDriverWait(driver, Duration.ofSeconds(1))
-                    .until(ExpectedConditions.elementToBeClickable(homePage.noteTitleInput));
-            homePage.addNote(noteTitle, noteDescription);
+            goToHomePageAndAddNote(noteTitle, noteDescription);
 
 //            check for success
             new WebDriverWait(driver, Duration.ofSeconds(1))
@@ -132,7 +114,8 @@ public class NotesTests {
             resultPage = new ResultPage(driver);
             resultPage.returnToHomePage();
 
-            homePage.goToNotesTab();
+
+//            homePage.goToNotesTab();
             new WebDriverWait(driver, Duration.ofSeconds(1))
                     .until(ExpectedConditions.elementToBeClickable(homePage.addNoteButton));
 
@@ -170,6 +153,27 @@ public class NotesTests {
             assertEquals(0, homePage.notesList.size());
         }
 
+        @Test
+        @DisplayName("ERROR Test adding a note with blank title")
+        public void testAddNoteWithBlankTitle() {
+//            signUpAndLogin();
+
+//            GIVEN
+            String blankTitle = " ";
+
+//            WHEN
+            goToHomePageAndAddNote(blankTitle, noteDescription);
+
+
+//            THEN
+//            check for error
+            new WebDriverWait(driver, Duration.ofSeconds(1))
+                    .until(ExpectedConditions.visibilityOfElementLocated(generalErrorHeading));
+            List<WebElement> error = driver.findElements(generalErrorHeading);
+
+            assertTrue(error.size() > 0);
+        }
+
 
         private void signUpAndLogin() {
             String firstname = "George";
@@ -186,6 +190,24 @@ public class NotesTests {
             LoginPage loginPage = new LoginPage(driver);
             loginPage.login(username, password);
 
+        }
+
+        private void goToHomePageAndAddNote(String title, String description) {
+            driver.get(baseURL + port + "/home");
+            homePage = new HomePage(driver);
+
+//            click on notes tab
+            homePage.goToNotesTab();
+            new WebDriverWait(driver, Duration.ofSeconds(1))
+                    .until(ExpectedConditions.elementToBeClickable(homePage.addNoteButton));
+
+//            click on add note button
+            homePage.clickAddNoteButton();
+
+//            add note
+            new WebDriverWait(driver, Duration.ofSeconds(1))
+                    .until(ExpectedConditions.elementToBeClickable(homePage.noteTitleInput));
+            homePage.addNote(title, description);
         }
 
 

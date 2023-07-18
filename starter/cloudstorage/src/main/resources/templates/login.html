@@ -4,12 +4,16 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/bootstrap.min.css}">
-
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/custom-bootstrap1.css}">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito&family=PT+Sans&display=swap" rel="stylesheet">
         <title>Login</title>
     </head>
     <body class="p-3 mb-2 bg-light text-black">
-        <div class="container justify-content-center w-25 p-3" style="background-color: #eeeeee; margin-top: 5em;">
+        <nav class="navbar fixed-top navbar-dark bg-dark">
+            <a class="navbar-brand" th:href="@{/}">Super Duper Drive</a>
+
+        </nav>
+        <div class="container justify-content-center w-25 p-3 bg-light " style="margin-top: 5em;">
             <h1 class="display-5">Login</h1>
             <div th:if="${param.success}" id="success-msg" class="alert alert-dark">
                 You successfully signed up! Please log in.
@@ -29,7 +33,7 @@
                     <label for="inputPassword">Password</label>
                     <input type="password" class="form-control" name="password" id="inputPassword" placeholder="Enter Password" maxlength="20" required>
                 </div>
-                <button type="submit" class="btn btn-primary" id="login-button">Login</button>
+                <button type="submit" class="btn btn-primary text-light" id="login-button">Login</button>
             </form>
 
             <div class="form-group" style="margin-top: 0.5em;">

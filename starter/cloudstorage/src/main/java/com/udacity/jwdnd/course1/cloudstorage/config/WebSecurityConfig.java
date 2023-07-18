@@ -43,7 +43,7 @@ public class WebSecurityConfig  {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/signup", "/login", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/","/signup", "/login", "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
                 )
 //                .formLogin(Customizer.withDefaults())

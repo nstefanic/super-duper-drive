@@ -4,9 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/bootstrap.min.css}">
-
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/custom-bootstrap1.css}">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito&family=PT+Sans&display=swap" rel="stylesheet">
         <title>Super Duper Drive</title>
+
     </head>
     <body class="p-3 mb-2 bg-light text-black">
         <div class="container">
@@ -21,7 +22,7 @@
 <!--            </div>-->
             <div id="logoutDiv">
                 <form th:action="@{/logout}" action="#" method="POST">
-                    <button id="logout-btn" type="submit" class="btn btn-secondary float-right">Logout</button>
+                    <button id="logout-btn" type="submit" class="btn btn-dark float-right">Logout</button>
                 </form>
             </div>
             <div id="contentDiv" style="clear: right;">
@@ -44,7 +45,7 @@
                                         <input type="file" class="form-control-file" id="fileUpload" name="fileUpload">
                                     </div>
                                     <div class="col-sm-4">
-                                        <button type="submit" class="btn btn-dark" id="uploadButton">Upload</button>
+                                        <button type="submit" class="btn btn-info" id="uploadButton">Upload</button>
                                     </div>
                                 </div>
                             </div>
@@ -87,8 +88,8 @@
                                 <tbody>
                                     <tr th:each="note : ${allNotes}" >
                                         <td>
-                                            <button th:onclick="showNoteModal([[${note.noteId}]], [[${note.noteTitle}]], [[${note.noteDescription}]])" type="button" class="btn btn-success">Edit</button>
-                                            <a th:href="@{/deleteNote?id={noteId}(noteId=${note.noteId})}" class="btn btn-danger">Delete</a>
+                                            <button th:onclick="showNoteModal([[${note.noteId}]], [[${note.noteTitle}]], [[${note.noteDescription}]])" type="button" class="btn btn-light">Edit</button>
+                                            <a th:href="@{/deleteNote?id={noteId}(noteId=${note.noteId})}" class="btn btn-dark">Delete</a>
                                         </td>
                                         <th scope="row" th:text="${note.noteTitle}">Example Note Title</th>
                                         <td th:text="${note.noteDescription}">Example Note Description </td>
@@ -146,8 +147,8 @@
                                 <tbody>
                                 <tr th:each="credential : ${allCredentials}">
                                     <td>
-                                        <button th:onclick="javascript:showCredentialModal([[${credential.credentialId}]], [[${credential.url}]], [[${credential.username}]], [[${encryptionService.decryptValue(credential.password, credential.pwdKey)}]])" type="button" class="btn btn-success">Edit</button>
-                                        <a th:href="@{/deleteCredential?id={credentialId}(credentialId=${credential.credentialId})}" class="btn btn-danger">Delete</a>
+                                        <button th:onclick="javascript:showCredentialModal([[${credential.credentialId}]], [[${credential.url}]], [[${credential.username}]], [[${encryptionService.decryptValue(credential.password, credential.pwdKey)}]])" type="button" class="btn btn-light">Edit</button>
+                                        <a th:href="@{/deleteCredential?id={credentialId}(credentialId=${credential.credentialId})}" class="btn btn-dark">Delete</a>
                                     </td>
                                     <th th:text="${credential.url}"  scope="row">Example Credential URL</th>
                                     <td th:text="${credential.username}">Example Credential Username</td>

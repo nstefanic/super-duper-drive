@@ -31,7 +31,9 @@ public class HomeController {
 
     @GetMapping("/")
     public String getRootPage() {
-        return "redirect:/home";
+
+        return "landing";
+//        return "redirect:/home";
     }
 
 

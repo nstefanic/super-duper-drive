@@ -4,12 +4,17 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/bootstrap.min.css}">
-
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/custom-bootstrap1.css}">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito&family=PT+Sans&display=swap" rel="stylesheet">
         <title>Sign Up</title>
     </head>
     <body class="p-3 mb-2 bg-light text-black">
-        <div class="container justify-content-center w-50 p-3" style="background-color: #eeeeee; margin-top: 5em;">
+
+        <nav class="navbar fixed-top  navbar-dark bg-dark">
+            <a class="navbar-brand" th:href="@{/}">Super Duper Drive</a>
+
+        </nav>
+        <div class="container justify-content-center w-50 p-3 bg-light" style="margin-top: 5em;">
             <div class="form-group">
                 <label><a th:href="@{/login}">Back to Login</a></label>
             </div>

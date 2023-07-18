@@ -145,4 +145,22 @@ public class AuthTests {
         assertEquals("Login", driver.getTitle());
     }
 
+    @Test
+    @Order(4)
+    @DisplayName("Test Unauthorized Access")
+    public void testUnauthorizedAccess() {
+
+//        GIVEN
+//        the user has not logged in
+
+//        WHEN
+//        attempt to go to home page (should not be able to)
+        driver.get(baseURL + port + "/home");
+
+//        THEN
+//        check that we are re-directed to login page
+        assertEquals("Login", driver.getTitle());
+    }
+
+
 }

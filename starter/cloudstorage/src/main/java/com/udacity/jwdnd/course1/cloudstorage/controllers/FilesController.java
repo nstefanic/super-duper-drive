@@ -41,7 +41,10 @@ public class FilesController {
     public ResponseEntity<ByteArrayResource> displayFile(@RequestParam boolean download, @PathVariable Integer fileId, Authentication authentication, Model model) {
 
         User user = userService.getUser(authentication.getName());
-        System.out.println("fileId in displayFile(): " + fileId);
+        if(user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         // Load the file from the file system or database
         UserFile userFile = fileService.getFileByIdAndUserId(fileId, user.getUserId());
         long fileSize = Long.parseLong(userFile.getFileSize());
@@ -70,6 +73,8 @@ public class FilesController {
     public String fileUpload(@RequestParam("fileUpload") MultipartFile fileUpload, Authentication authentication, RedirectAttributes redirectAttributes, Model model) {
         System.out.println("fileUpload started... ");
         redirectAttributes.addFlashAttribute("activeTab", "files");
+
+
 
         try {
             User user = userService.getUser(authentication.getName());
@@ -185,6 +190,12 @@ public class FilesController {
 
         try {
             User user = userService.getUser(authentication.getName());
+            if(user == null) {
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "There was an error deleting the file.  Please log in and try again.");
+                return "redirect:/result";
+            }
+
             Integer userId = user.getUserId();
 
             System.out.println("fileId in deleteFile(): " + fileId);

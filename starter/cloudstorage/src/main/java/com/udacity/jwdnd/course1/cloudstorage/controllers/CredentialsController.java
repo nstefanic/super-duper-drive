@@ -32,6 +32,12 @@ public class CredentialsController {
         redirectAttributes.addFlashAttribute("activeTab", "credentials");
 
         User user = userService.getUser(authentication.getName());
+        if(user == null) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "Must be logged in to add a credential.");
+            return "redirect:/result";
+        }
+
         Integer userId = user.getUserId();
         credential.setUserId(userId);
 

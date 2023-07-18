@@ -37,6 +37,19 @@ public class NotesController {
         model.addAttribute("activeTab", "notes");
 
         User user = userService.getUser(authentication.getName());
+
+        if(user == null) {
+            model.addAttribute("error", true);
+            model.addAttribute("message", "User must be logged in.");
+            return "result";
+        }
+
+        if(noteId == null) {
+            model.addAttribute("error", true);
+            model.addAttribute("message", "Note not found.");
+            return "result";
+        }
+
         Note[] notes = noteService.getAllNotes(user.getUserId());
         model.addAttribute("allNotes", notes);
         return "home";
@@ -47,6 +60,13 @@ public class NotesController {
         redirectAttributes.addFlashAttribute("activeTab", "notes");
 
         User user = userService.getUser(authentication.getName());
+
+        if(user == null) {
+            redirectAttributes.addFlashAttribute("error", true);
+            redirectAttributes.addFlashAttribute("message", "User must be logged in.");
+            return "redirect:/result";
+        }
+
         note.setUserId(user.getUserId());
 
         String noteTitle = note.getNoteTitle();
@@ -82,6 +102,14 @@ public class NotesController {
 
         try{
             User user = userService.getUser(authentication.getName());
+
+            if(user == null) {
+                redirectAttributes.addFlashAttribute("error", true);
+                redirectAttributes.addFlashAttribute("message", "User must be logged in.");
+                return "redirect:/result";
+            }
+
+
             noteService.deleteNote(noteId, user.getUserId());
             redirectAttributes.addFlashAttribute("success", true);
         } catch (Exception e) {
